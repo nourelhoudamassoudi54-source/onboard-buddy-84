@@ -4,7 +4,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CandidaturesProvider } from "@/contexts/CandidaturesContext";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminSalaries from "./pages/admin/AdminSalaries";
 import AdminPostes from "./pages/admin/AdminPostes";
@@ -30,10 +32,12 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
+        <CandidaturesProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
 
             {/* Admin RH */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -59,6 +63,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+        </CandidaturesProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

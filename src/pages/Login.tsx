@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Building2, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -99,6 +99,20 @@ const Login = () => {
               Se connecter <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
+            <div className="relative flex justify-center text-xs"><span className="bg-background px-2 text-muted-foreground">ou</span></div>
+          </div>
+
+          <Link to="/signup" className="block">
+            <Button type="button" variant="outline" className="w-full border-salarie/30 text-salarie hover:bg-salarie/10 hover:text-salarie">
+              Créer un compte salarié
+            </Button>
+          </Link>
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Complétez votre dossier, l'Admin RH validera et vous enverra vos identifiants.
+          </p>
 
           <div className="mt-8">
             <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wider">Accès rapide (démo)</p>

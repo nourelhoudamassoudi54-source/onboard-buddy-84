@@ -313,13 +313,46 @@ const AdminSalaries = () => {
 
                 <div>
                   <h4 className="text-sm font-semibold mb-2">Étapes du parcours</h4>
-                  <div className="space-y-1.5">
-                    {reviewing.etapes.map(e => (
-                      <div key={e.id} className="flex items-center gap-2 text-sm">
-                        {e.termine ? <Check className="w-4 h-4 text-salarie" /> : <X className="w-4 h-4 text-muted-foreground" />}
-                        <span className={e.termine ? '' : 'text-muted-foreground'}>{e.titre}</span>
-                      </div>
-                    ))}
+                  <div className="space-y-2">
+                    {reviewing.etapes.map(e => {
+                      const pieces = (e.piecesAttendues || []).map(nom => ({
+                        nom,
+                        doc: reviewing.documents.find(d => d.nom.toLowerCase() === nom.toLowerCase()),
+                      }));
+                      return (
+                        <div key={e.id} className="p-3 border border-border rounded-lg">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-2">
+                              {e.termine
+                                ? <Check className="w-4 h-4 text-salarie mt-0.5" />
+                                : <Clock className="w-4 h-4 text-muted-foreground mt-0.5" />}
+                              <div>
+                                <p className="text-sm font-medium">{e.titre}</p>
+                                <p className="text-xs text-muted-foreground">{e.description}</p>
+                              </div>
+                            </div>
+                            {e.termine
+                              ? <Badge className="bg-salarie/10 text-salarie hover:bg-salarie/20">Fait</Badge>
+                              : <Badge variant="secondary">En attente</Badge>}
+                          </div>
+
+                          {pieces.length > 0 && (
+                            <div className="mt-3 pl-6 space-y-1">
+                              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Pièces justificatives</p>
+                              {pieces.map(p => (
+                                <div key={p.nom} className="flex items-center gap-2 text-sm">
+                                  <FileText className="w-3.5 h-3.5 text-muted-foreground" />
+                                  <span className="flex-1">{p.nom}</span>
+                                  {p.doc
+                                    ? <span className="inline-flex items-center gap-1 text-xs text-salarie"><Check className="w-3 h-3" /> Fournie</span>
+                                    : <span className="inline-flex items-center gap-1 text-xs text-destructive"><X className="w-3 h-3" /> Manquante</span>}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

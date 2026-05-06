@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { mockUsers } from '@/data/mock-data';
+import { User } from '@/types';
 
 export interface CandidatureDocument {
   nom: string;
@@ -31,11 +33,16 @@ export interface Candidature {
   statut: CandidatureStatut;
   dateCreation: string;
   motDePasseGenere?: string;
+  managerId?: string;
+  managerNom?: string;
+  parcoursIntitule?: string;
+  parcoursProgression: number;
 }
 
 interface CandidaturesContextType {
   candidatures: Candidature[];
-  addCandidature: (c: Omit<Candidature, 'id' | 'dateCreation' | 'statut' | 'progression'>) => Candidature;
+  promus: User[];
+  addCandidature: (c: Omit<Candidature, 'id' | 'dateCreation' | 'statut' | 'progression' | 'parcoursProgression'>) => Candidature;
   updateCandidature: (id: string, patch: Partial<Candidature>) => void;
   validateCandidature: (id: string) => { email: string; password: string };
   refuseCandidature: (id: string) => void;
@@ -47,33 +54,49 @@ const CandidaturesContext = createContext<CandidaturesContextType | undefined>(u
 const computeProgression = (c: Pick<Candidature, 'prenom' | 'nom' | 'email' | 'telephone' | 'adresse' | 'dateNaissance' | 'posteId' | 'documents' | 'etapes'>) => {
   let total = 0;
   let done = 0;
-  // Infos perso (6 champs)
   const fields = [c.prenom, c.nom, c.email, c.telephone, c.adresse, c.dateNaissance];
   total += fields.length;
   done += fields.filter(Boolean).length;
-  // Poste (1)
   total += 1;
   if (c.posteId) done += 1;
-  // Documents (au moins 3)
   total += 3;
   done += Math.min(3, c.documents.length);
-  // Étapes
   total += c.etapes.length;
   done += c.etapes.filter(e => e.termine).length;
   return Math.round((done / total) * 100);
 };
 
+// Auto-assign a manager (round-robin among MANAGERS)
+const managers = mockUsers.filter(u => u.role === 'MANAGER');
+let managerCursor = 0;
+const pickManager = () => {
+  if (managers.length === 0) return undefined;
+  const m = managers[managerCursor % managers.length];
+  managerCursor++;
+  return m;
+};
+
+const parcoursForPoste = (posteTitre: string) => `Onboarding ${posteTitre}`;
+
 export const CandidaturesProvider = ({ children }: { children: ReactNode }) => {
   const [candidatures, setCandidatures] = useState<Candidature[]>([]);
+  const [promus, setPromus] = useState<User[]>([]);
 
   const addCandidature: CandidaturesContextType['addCandidature'] = (data) => {
     const progression = computeProgression(data);
+    const manager = pickManager();
+    // Étapes du parcours d'onboarding démarrent à la progression atteinte par le candidat
+    const parcoursProgression = Math.round((data.etapes.filter(e => e.termine).length / Math.max(1, data.etapes.length)) * 100);
     const candidature: Candidature = {
       ...data,
       id: `cand-${Date.now()}`,
       dateCreation: new Date().toISOString(),
       statut: progression === 100 ? 'EN_ATTENTE_VALIDATION' : 'EN_COURS',
       progression,
+      managerId: manager?.id,
+      managerNom: manager ? `${manager.prenom} ${manager.nom}` : undefined,
+      parcoursIntitule: parcoursForPoste(data.posteTitre),
+      parcoursProgression,
     };
     setCandidatures(prev => [candidature, ...prev]);
     return candidature;
@@ -84,24 +107,39 @@ export const CandidaturesProvider = ({ children }: { children: ReactNode }) => {
       if (c.id !== id) return c;
       const merged = { ...c, ...patch };
       const progression = computeProgression(merged);
+      const parcoursProgression = Math.round((merged.etapes.filter(e => e.termine).length / Math.max(1, merged.etapes.length)) * 100);
       const statut: CandidatureStatut =
         merged.statut === 'VALIDE' || merged.statut === 'REFUSE'
           ? merged.statut
           : progression === 100
             ? 'EN_ATTENTE_VALIDATION'
             : 'EN_COURS';
-      return { ...merged, progression, statut };
+      return { ...merged, progression, parcoursProgression, statut };
     }));
   };
 
   const validateCandidature: CandidaturesContextType['validateCandidature'] = (id) => {
     const password = Math.random().toString(36).slice(-10);
     let email = '';
+    let promoted: User | null = null;
     setCandidatures(prev => prev.map(c => {
       if (c.id !== id) return c;
       email = c.email;
+      // Promote candidature -> User actif
+      promoted = {
+        id: `user-${c.id}`,
+        nom: c.nom,
+        prenom: c.prenom,
+        email: c.email,
+        telephone: c.telephone,
+        actif: true,
+        role: 'SALARIE',
+        posteId: c.posteId,
+        poste: { id: c.posteId, titre: c.posteTitre, description: '', departement: '' },
+      };
       return { ...c, statut: 'VALIDE', motDePasseGenere: password };
     }));
+    if (promoted) setPromus(prev => [promoted as User, ...prev]);
     return { email, password };
   };
 
@@ -113,7 +151,7 @@ export const CandidaturesProvider = ({ children }: { children: ReactNode }) => {
     candidatures.find(c => c.email.toLowerCase() === email.toLowerCase());
 
   return (
-    <CandidaturesContext.Provider value={{ candidatures, addCandidature, updateCandidature, validateCandidature, refuseCandidature, getCandidatureByEmail }}>
+    <CandidaturesContext.Provider value={{ candidatures, promus, addCandidature, updateCandidature, validateCandidature, refuseCandidature, getCandidatureByEmail }}>
       {children}
     </CandidaturesContext.Provider>
   );

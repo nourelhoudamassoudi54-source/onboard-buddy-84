@@ -13,6 +13,8 @@ export interface EtapeProfil {
   titre: string;
   description: string;
   termine: boolean;
+  /** Noms des pièces justificatives attendues pour cette étape (matchés sur Candidature.documents[].nom) */
+  piecesAttendues?: string[];
 }
 
 export type CandidatureStatut = 'EN_COURS' | 'EN_ATTENTE_VALIDATION' | 'VALIDE' | 'REFUSE';
@@ -164,8 +166,8 @@ export const useCandidatures = () => {
 };
 
 export const ETAPES_PROFIL_DEFAUT: EtapeProfil[] = [
-  { id: 'e1', titre: 'Lire le livret d\'accueil', description: 'Consulter le guide de présentation de l\'entreprise', termine: false },
-  { id: 'e2', titre: 'Accepter le règlement intérieur', description: 'Lire et accepter le règlement intérieur', termine: false },
-  { id: 'e3', titre: 'Compléter la fiche de renseignements', description: 'Remplir les informations administratives', termine: false },
-  { id: 'e4', titre: 'Confirmer la date de prise de poste', description: 'Valider votre date de démarrage', termine: false },
+  { id: 'e1', titre: 'Lire le livret d\'accueil', description: 'Consulter le guide de présentation de l\'entreprise', termine: false, piecesAttendues: [] },
+  { id: 'e2', titre: 'Accepter le règlement intérieur', description: 'Lire et accepter le règlement intérieur', termine: false, piecesAttendues: ['Pièce d\'identité'] },
+  { id: 'e3', titre: 'Compléter la fiche de renseignements', description: 'Remplir les informations administratives', termine: false, piecesAttendues: ['CV', 'RIB'] },
+  { id: 'e4', titre: 'Confirmer la date de prise de poste', description: 'Valider votre date de démarrage', termine: false, piecesAttendues: [] },
 ];

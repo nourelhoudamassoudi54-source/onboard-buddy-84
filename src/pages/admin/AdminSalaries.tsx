@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { PageHeader } from '@/components/shared/DashboardWidgets';
 import { mockUsers, mockPostes } from '@/data/mock-data';
@@ -15,26 +15,49 @@ import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { useCandidatures, Candidature } from '@/contexts/CandidaturesContext';
 
+const statutBadge = (s: Candidature['statut']) => {
+  switch (s) {
+    case 'EN_COURS': return <Badge variant="secondary">En cours</Badge>;
+    case 'EN_ATTENTE_VALIDATION': return <Badge className="bg-admin/10 text-admin hover:bg-admin/20">Prêt à valider</Badge>;
+    case 'VALIDE': return <Badge className="bg-salarie/10 text-salarie hover:bg-salarie/20">Validé</Badge>;
+    case 'REFUSE': return <Badge className="bg-destructive/10 text-destructive hover:bg-destructive/20">Refusé</Badge>;
+  }
+};
+
 const AdminSalaries = () => {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [reviewing, setReviewing] = useState<Candidature | null>(null);
   const { toast } = useToast();
-  const { candidatures, validateCandidature, refuseCandidature } = useCandidatures();
+  const { candidatures, promus, validateCandidature, refuseCandidature } = useCandidatures();
 
-  const filtered = mockUsers.filter(u =>
+  // Salariés actifs = mock + promus depuis les candidatures validées
+  const allUsers = useMemo(() => [...promus, ...mockUsers], [promus]);
+  const filtered = allUsers.filter(u =>
     `${u.prenom} ${u.nom} ${u.email}`.toLowerCase().includes(search.toLowerCase())
   );
 
   const enAttente = candidatures.filter(c => c.statut === 'EN_ATTENTE_VALIDATION' || c.statut === 'EN_COURS');
   const traitees = candidatures.filter(c => c.statut === 'VALIDE' || c.statut === 'REFUSE');
 
+  // Validation finale possible uniquement si dossier complet ET parcours d'onboarding terminé
+  const canFinalValidate = (c: Candidature) =>
+    c.statut === 'EN_ATTENTE_VALIDATION' && c.parcoursProgression === 100;
+
   const handleValidate = (c: Candidature) => {
+    if (!canFinalValidate(c)) {
+      toast({
+        title: 'Validation impossible',
+        description: 'Le parcours d\'onboarding du candidat doit être terminé à 100%.',
+        variant: 'destructive',
+      });
+      return;
+    }
     const { email, password } = validateCandidature(c.id);
     setReviewing(null);
     toast({
-      title: 'Compte validé ✓',
-      description: `Email envoyé à ${email} avec login: ${email} / mot de passe: ${password}`,
+      title: 'Compte activé ✓',
+      description: `${c.prenom} ${c.nom} ajouté(e) aux salariés actifs. Identifiants envoyés à ${email} (mot de passe : ${password}).`,
     });
   };
 
@@ -163,45 +186,49 @@ const AdminSalaries = () => {
                 <p className="text-xs text-muted-foreground mt-1">Les nouveaux comptes créés depuis la page de connexion apparaîtront ici.</p>
               </div>
             ) : (
-              <div className="divide-y divide-border">
-                {enAttente.map(c => (
-                  <div key={c.id} className="p-5 hover:bg-accent/30 transition-colors">
-                    <div className="flex items-start justify-between gap-4 flex-wrap">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-salarie/10 text-salarie flex items-center justify-center text-sm font-semibold">
-                          {c.prenom[0]}{c.nom[0]}
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">{c.prenom} {c.nom}</p>
-                          <p className="text-xs text-muted-foreground">{c.email} · {c.posteTitre}</p>
-                          <div className="flex items-center gap-3 mt-2">
-                            <Progress value={c.progression} className="w-40 h-2" />
-                            <span className="text-xs font-semibold tabular-nums">{c.progression}%</span>
-                            {c.statut === 'EN_ATTENTE_VALIDATION'
-                              ? <Badge className="bg-admin/10 text-admin hover:bg-admin/20">Prêt à valider</Badge>
-                              : <Badge variant="secondary">En cours</Badge>}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      {['Candidat', 'Poste', 'Manager', 'Parcours', 'Progression', 'Statut', 'Détails'].map(h => (
+                        <th key={h} className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-5 py-3">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {enAttente.map((c, i) => (
+                      <motion.tr key={c.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }} className="hover:bg-accent/30 transition-colors">
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-salarie/10 text-salarie flex items-center justify-center text-xs font-semibold">
+                              {c.prenom[0]}{c.nom[0]}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{c.prenom} {c.nom}</p>
+                              <p className="text-xs text-muted-foreground">{c.email}</p>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setReviewing(c)}>
-                          <Eye className="w-4 h-4 mr-1.5" /> Voir le dossier
-                        </Button>
-                        <Button
-                          size="sm"
-                          disabled={c.statut !== 'EN_ATTENTE_VALIDATION'}
-                          onClick={() => handleValidate(c)}
-                          className="bg-salarie hover:bg-salarie/90"
-                        >
-                          <Check className="w-4 h-4 mr-1.5" /> Valider
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleRefuse(c)}>
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                        </td>
+                        <td className="px-5 py-4 text-sm text-muted-foreground">{c.posteTitre}</td>
+                        <td className="px-5 py-4 text-sm text-muted-foreground">{c.managerNom || '—'}</td>
+                        <td className="px-5 py-4 text-sm text-muted-foreground">{c.parcoursIntitule || '—'}</td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-2 min-w-[140px]">
+                            <Progress value={c.parcoursProgression} className="h-2 flex-1" />
+                            <span className="text-xs font-semibold tabular-nums w-10 text-right">{c.parcoursProgression}%</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-1">Dossier {c.progression}%</p>
+                        </td>
+                        <td className="px-5 py-4">{statutBadge(c.statut)}</td>
+                        <td className="px-5 py-4">
+                          <Button variant="outline" size="sm" onClick={() => setReviewing(c)}>
+                            <Eye className="w-4 h-4 mr-1.5" /> Détails
+                          </Button>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
@@ -224,9 +251,7 @@ const AdminSalaries = () => {
                         <p className="text-xs text-muted-foreground">{c.email} · {c.posteTitre}</p>
                       </div>
                     </div>
-                    <Badge className={c.statut === 'VALIDE' ? 'bg-salarie/10 text-salarie' : 'bg-destructive/10 text-destructive'}>
-                      {c.statut === 'VALIDE' ? 'Validé' : 'Refusé'}
-                    </Badge>
+                    {statutBadge(c.statut)}
                   </div>
                 ))}
               </div>
@@ -244,9 +269,23 @@ const AdminSalaries = () => {
                 <DialogTitle>Dossier de {reviewing.prenom} {reviewing.nom}</DialogTitle>
               </DialogHeader>
               <div className="space-y-5 mt-2">
-                <div className="flex items-center gap-3">
-                  <Progress value={reviewing.progression} className="flex-1 h-2" />
-                  <span className="text-sm font-semibold">{reviewing.progression}%</span>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="p-2 bg-muted/40 rounded"><span className="text-xs text-muted-foreground">Poste</span><p>{reviewing.posteTitre}</p></div>
+                  <div className="p-2 bg-muted/40 rounded"><span className="text-xs text-muted-foreground">Manager</span><p>{reviewing.managerNom || '—'}</p></div>
+                  <div className="p-2 bg-muted/40 rounded col-span-2"><span className="text-xs text-muted-foreground">Parcours d'onboarding</span><p>{reviewing.parcoursIntitule}</p></div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-semibold mb-2">Progression du parcours d'onboarding</h4>
+                  <div className="flex items-center gap-3">
+                    <Progress value={reviewing.parcoursProgression} className="flex-1 h-2" />
+                    <span className="text-sm font-semibold tabular-nums w-12 text-right">{reviewing.parcoursProgression}%</span>
+                  </div>
+                  {reviewing.parcoursProgression < 100 && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Le candidat doit terminer son parcours pour pouvoir être validé définitivement.
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -257,11 +296,6 @@ const AdminSalaries = () => {
                     <div className="p-2 bg-muted/40 rounded"><span className="text-xs text-muted-foreground">Date de naissance</span><p>{reviewing.dateNaissance}</p></div>
                     <div className="p-2 bg-muted/40 rounded"><span className="text-xs text-muted-foreground">Adresse</span><p>{reviewing.adresse}</p></div>
                   </div>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-semibold mb-2">Poste demandé</h4>
-                  <div className="p-3 bg-muted/40 rounded text-sm">{reviewing.posteTitre}</div>
                 </div>
 
                 <div>
@@ -278,7 +312,7 @@ const AdminSalaries = () => {
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-semibold mb-2">Étapes</h4>
+                  <h4 className="text-sm font-semibold mb-2">Étapes du parcours</h4>
                   <div className="space-y-1.5">
                     {reviewing.etapes.map(e => (
                       <div key={e.id} className="flex items-center gap-2 text-sm">
@@ -295,10 +329,10 @@ const AdminSalaries = () => {
                 </Button>
                 <Button
                   onClick={() => handleValidate(reviewing)}
-                  disabled={reviewing.statut !== 'EN_ATTENTE_VALIDATION'}
+                  disabled={!canFinalValidate(reviewing)}
                   className="bg-salarie hover:bg-salarie/90"
                 >
-                  <Mail className="w-4 h-4 mr-1.5" /> Valider et envoyer les identifiants
+                  <Mail className="w-4 h-4 mr-1.5" /> Valider et activer le compte
                 </Button>
               </DialogFooter>
             </>

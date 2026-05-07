@@ -19,6 +19,16 @@ export interface EtapeProfil {
 
 export type CandidatureStatut = 'EN_COURS' | 'EN_ATTENTE_VALIDATION' | 'VALIDE' | 'REFUSE';
 
+export type HistoriqueType = 'CREATION' | 'ETAPE_TERMINEE' | 'DOCUMENT_AJOUTE' | 'STATUT' | 'PROGRESSION' | 'VALIDATION' | 'REFUS';
+
+export interface HistoriqueEntry {
+  id: string;
+  date: string;
+  type: HistoriqueType;
+  label: string;
+  progression: number;
+}
+
 export interface Candidature {
   id: string;
   prenom: string;
@@ -39,12 +49,13 @@ export interface Candidature {
   managerNom?: string;
   parcoursIntitule?: string;
   parcoursProgression: number;
+  historique: HistoriqueEntry[];
 }
 
 interface CandidaturesContextType {
   candidatures: Candidature[];
   promus: User[];
-  addCandidature: (c: Omit<Candidature, 'id' | 'dateCreation' | 'statut' | 'progression' | 'parcoursProgression'>) => Candidature;
+  addCandidature: (c: Omit<Candidature, 'id' | 'dateCreation' | 'statut' | 'progression' | 'parcoursProgression' | 'historique'>) => Candidature;
   updateCandidature: (id: string, patch: Partial<Candidature>) => void;
   validateCandidature: (id: string) => { email: string; password: string };
   refuseCandidature: (id: string) => void;
@@ -84,21 +95,34 @@ export const CandidaturesProvider = ({ children }: { children: ReactNode }) => {
   const [candidatures, setCandidatures] = useState<Candidature[]>([]);
   const [promus, setPromus] = useState<User[]>([]);
 
+  const mkEntry = (type: HistoriqueType, label: string, progression: number): HistoriqueEntry => ({
+    id: `h-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    date: new Date().toISOString(),
+    type, label, progression,
+  });
+
   const addCandidature: CandidaturesContextType['addCandidature'] = (data) => {
     const progression = computeProgression(data);
     const manager = pickManager();
-    // Étapes du parcours d'onboarding démarrent à la progression atteinte par le candidat
     const parcoursProgression = Math.round((data.etapes.filter(e => e.termine).length / Math.max(1, data.etapes.length)) * 100);
+    const statut: CandidatureStatut = progression === 100 ? 'EN_ATTENTE_VALIDATION' : 'EN_COURS';
+    const historique: HistoriqueEntry[] = [
+      mkEntry('CREATION', `Candidature créée pour le poste « ${data.posteTitre} »`, parcoursProgression),
+    ];
+    if (statut === 'EN_ATTENTE_VALIDATION') {
+      historique.push(mkEntry('STATUT', 'Dossier complet, en attente de validation', parcoursProgression));
+    }
     const candidature: Candidature = {
       ...data,
       id: `cand-${Date.now()}`,
       dateCreation: new Date().toISOString(),
-      statut: progression === 100 ? 'EN_ATTENTE_VALIDATION' : 'EN_COURS',
+      statut,
       progression,
       managerId: manager?.id,
       managerNom: manager ? `${manager.prenom} ${manager.nom}` : undefined,
       parcoursIntitule: parcoursForPoste(data.posteTitre),
       parcoursProgression,
+      historique,
     };
     setCandidatures(prev => [candidature, ...prev]);
     return candidature;
@@ -116,7 +140,33 @@ export const CandidaturesProvider = ({ children }: { children: ReactNode }) => {
           : progression === 100
             ? 'EN_ATTENTE_VALIDATION'
             : 'EN_COURS';
-      return { ...merged, progression, parcoursProgression, statut };
+
+      const newHist = [...(c.historique || [])];
+      // Étapes nouvellement terminées
+      merged.etapes.forEach(e => {
+        const prev = c.etapes.find(p => p.id === e.id);
+        if (e.termine && (!prev || !prev.termine)) {
+          newHist.push(mkEntry('ETAPE_TERMINEE', `Étape terminée : ${e.titre}`, parcoursProgression));
+        }
+      });
+      // Documents ajoutés
+      const prevDocs = new Set(c.documents.map(d => d.nom.toLowerCase()));
+      merged.documents.forEach(d => {
+        if (!prevDocs.has(d.nom.toLowerCase())) {
+          newHist.push(mkEntry('DOCUMENT_AJOUTE', `Document ajouté : ${d.nom}`, parcoursProgression));
+        }
+      });
+      // Changement de statut
+      if (statut !== c.statut) {
+        const label = statut === 'EN_ATTENTE_VALIDATION'
+          ? 'Dossier complet, en attente de validation'
+          : statut === 'EN_COURS' ? 'Parcours en cours' : statut;
+        newHist.push(mkEntry('STATUT', label, parcoursProgression));
+      } else if (parcoursProgression !== c.parcoursProgression) {
+        newHist.push(mkEntry('PROGRESSION', `Progression mise à jour à ${parcoursProgression}%`, parcoursProgression));
+      }
+
+      return { ...merged, progression, parcoursProgression, statut, historique: newHist };
     }));
   };
 
@@ -127,26 +177,23 @@ export const CandidaturesProvider = ({ children }: { children: ReactNode }) => {
     setCandidatures(prev => prev.map(c => {
       if (c.id !== id) return c;
       email = c.email;
-      // Promote candidature -> User actif
       promoted = {
         id: `user-${c.id}`,
-        nom: c.nom,
-        prenom: c.prenom,
-        email: c.email,
-        telephone: c.telephone,
-        actif: true,
-        role: 'SALARIE',
-        posteId: c.posteId,
+        nom: c.nom, prenom: c.prenom, email: c.email, telephone: c.telephone,
+        actif: true, role: 'SALARIE', posteId: c.posteId,
         poste: { id: c.posteId, titre: c.posteTitre, description: '', departement: '' },
       };
-      return { ...c, statut: 'VALIDE', motDePasseGenere: password };
+      const newHist = [...(c.historique || []), mkEntry('VALIDATION', 'Compte validé et identifiants envoyés par email', 100)];
+      return { ...c, statut: 'VALIDE', motDePasseGenere: password, historique: newHist };
     }));
     if (promoted) setPromus(prev => [promoted as User, ...prev]);
     return { email, password };
   };
 
   const refuseCandidature: CandidaturesContextType['refuseCandidature'] = (id) => {
-    setCandidatures(prev => prev.map(c => c.id === id ? { ...c, statut: 'REFUSE' } : c));
+    setCandidatures(prev => prev.map(c => c.id === id
+      ? { ...c, statut: 'REFUSE', historique: [...(c.historique || []), mkEntry('REFUS', 'Candidature refusée', c.parcoursProgression)] }
+      : c));
   };
 
   const getCandidatureByEmail = (email: string) =>

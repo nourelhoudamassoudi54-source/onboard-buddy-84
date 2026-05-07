@@ -251,7 +251,9 @@ const CandidatCard = ({
         </div>
       )}
 
-      {/* Actions */}
+      {/* Timeline de progression + historique */}
+      <ProgressionTimeline c={c} />
+
       {showActions && (
         <div className="mt-5 flex gap-2">
           <Button

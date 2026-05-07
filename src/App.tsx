@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminSalaries from "./pages/admin/AdminSalaries";
+import AdminCandidatures from "./pages/admin/AdminCandidatures";
 import AdminPostes from "./pages/admin/AdminPostes";
 import AdminParcours from "./pages/admin/AdminParcours";
 import AdminSuivi from "./pages/admin/AdminSuivi";
@@ -42,6 +43,7 @@ const App = () => (
             {/* Admin RH */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/salaries" element={<AdminSalaries />} />
+            <Route path="/admin/candidatures" element={<AdminCandidatures />} />
             <Route path="/admin/postes" element={<AdminPostes />} />
             <Route path="/admin/parcours" element={<AdminParcours />} />
             <Route path="/admin/suivi" element={<AdminSuivi />} />

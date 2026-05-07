@@ -5,7 +5,7 @@ import { RoleType } from '@/types';
 import {
   LayoutDashboard, Users, Briefcase, Route, ClipboardList, BarChart3,
   UserCircle, FolderOpen, CheckSquare, LogOut, ChevronLeft, Menu,
-  Building2
+  Building2, UserCheck
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -21,6 +21,7 @@ interface NavItem {
 const navByRole: Record<RoleType, NavItem[]> = {
   ADMIN_RH: [
     { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { label: 'Candidatures', path: '/admin/candidatures', icon: UserCheck },
     { label: 'Salariés', path: '/admin/salaries', icon: Users },
     { label: 'Postes', path: '/admin/postes', icon: Briefcase },
     { label: 'Parcours', path: '/admin/parcours', icon: Route },

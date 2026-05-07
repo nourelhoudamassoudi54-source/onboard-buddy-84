@@ -273,4 +273,99 @@ const CandidatCard = ({
   );
 };
 
+
+const ICONS: Record<string, React.ElementType> = {
+  CREATION: Sparkles,
+  ETAPE_TERMINEE: CheckCircle2,
+  DOCUMENT_AJOUTE: FilePlus,
+  STATUT: Activity,
+  PROGRESSION: Activity,
+  VALIDATION: CheckCircle2,
+  REFUS: XCircle,
+};
+
+const COLORS: Record<string, string> = {
+  CREATION: 'text-admin bg-admin/10 border-admin/30',
+  ETAPE_TERMINEE: 'text-salarie bg-salarie/10 border-salarie/30',
+  DOCUMENT_AJOUTE: 'text-manager bg-manager/10 border-manager/30',
+  STATUT: 'text-admin bg-admin/10 border-admin/30',
+  PROGRESSION: 'text-muted-foreground bg-muted border-border',
+  VALIDATION: 'text-salarie bg-salarie/10 border-salarie/40',
+  REFUS: 'text-destructive bg-destructive/10 border-destructive/30',
+};
+
+const formatDate = (iso: string) => new Date(iso).toLocaleString('fr-FR', {
+  day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+});
+
+const ProgressionTimeline = ({ c }: { c: Candidature }) => {
+  const hist = c.historique || [];
+  return (
+    <div className="mt-5 border-t border-border pt-4">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <History className="w-3.5 h-3.5" /> Timeline de progression
+        </p>
+        <span className="text-xs text-muted-foreground">{hist.length} événement{hist.length > 1 ? 's' : ''}</span>
+      </div>
+
+      {/* Barre 0 → 100% avec marqueurs */}
+      <div className="relative mb-5 px-1">
+        <div className="h-1.5 rounded-full bg-muted">
+          <div
+            className="h-1.5 rounded-full bg-gradient-to-r from-admin via-manager to-salarie transition-all"
+            style={{ width: `${c.parcoursProgression}%` }}
+          />
+        </div>
+        <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
+          <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+        </div>
+        {hist.map((h, i) => (
+          <div
+            key={h.id}
+            className="absolute -top-1 w-2.5 h-2.5 rounded-full border-2 border-card"
+            title={`${formatDate(h.date)} — ${h.label}`}
+            style={{
+              left: `calc(${Math.min(100, Math.max(0, h.progression))}% - 5px)`,
+              backgroundColor: h.type === 'REFUS'
+                ? 'hsl(var(--destructive))'
+                : h.type === 'VALIDATION'
+                  ? 'hsl(var(--salarie))'
+                  : 'hsl(var(--admin))',
+              zIndex: 10 + i,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Historique vertical */}
+      {hist.length > 0 ? (
+        <ol className="relative border-l border-border ml-2 space-y-3">
+          {[...hist].reverse().map(h => {
+            const Icon = ICONS[h.type] || Activity;
+            return (
+              <li key={h.id} className="ml-4">
+                <span className={cn(
+                  'absolute -left-[11px] flex items-center justify-center w-5 h-5 rounded-full border',
+                  COLORS[h.type] || 'bg-muted border-border'
+                )}>
+                  <Icon className="w-3 h-3" />
+                </span>
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="text-sm">{h.label}</p>
+                  <span className="text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">
+                    {formatDate(h.date)} · {h.progression}%
+                  </span>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      ) : (
+        <p className="text-xs text-muted-foreground">Aucun événement enregistré.</p>
+      )}
+    </div>
+  );
+};
+
 export default AdminCandidatures;

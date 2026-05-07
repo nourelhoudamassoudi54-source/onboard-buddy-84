@@ -5,7 +5,7 @@ import { RoleType } from '@/types';
 import {
   LayoutDashboard, Users, Briefcase, Route, ClipboardList, BarChart3,
   UserCircle, FolderOpen, CheckSquare, LogOut, ChevronLeft, Menu,
-  Building2
+  Building2, UserCheck
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';

@@ -19,6 +19,16 @@ export interface EtapeProfil {
 
 export type CandidatureStatut = 'EN_COURS' | 'EN_ATTENTE_VALIDATION' | 'VALIDE' | 'REFUSE';
 
+export type HistoriqueType = 'CREATION' | 'ETAPE_TERMINEE' | 'DOCUMENT_AJOUTE' | 'STATUT' | 'PROGRESSION' | 'VALIDATION' | 'REFUS';
+
+export interface HistoriqueEntry {
+  id: string;
+  date: string;
+  type: HistoriqueType;
+  label: string;
+  progression: number;
+}
+
 export interface Candidature {
   id: string;
   prenom: string;
@@ -39,6 +49,7 @@ export interface Candidature {
   managerNom?: string;
   parcoursIntitule?: string;
   parcoursProgression: number;
+  historique: HistoriqueEntry[];
 }
 
 interface CandidaturesContextType {

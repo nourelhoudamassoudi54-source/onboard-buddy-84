@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/shared/DashboardWidgets';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Check, X, FileText, Clock, Mail, Inbox, Users as UsersIcon, Ban, PlayCircle } from 'lucide-react';
+import { Check, X, FileText, Clock, Mail, Inbox, Users as UsersIcon, Ban, PlayCircle, History, FilePlus, CheckCircle2, XCircle, Sparkles, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { useCandidatures, Candidature } from '@/contexts/CandidaturesContext';

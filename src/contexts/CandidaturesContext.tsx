@@ -55,7 +55,7 @@ export interface Candidature {
 interface CandidaturesContextType {
   candidatures: Candidature[];
   promus: User[];
-  addCandidature: (c: Omit<Candidature, 'id' | 'dateCreation' | 'statut' | 'progression' | 'parcoursProgression'>) => Candidature;
+  addCandidature: (c: Omit<Candidature, 'id' | 'dateCreation' | 'statut' | 'progression' | 'parcoursProgression' | 'historique'>) => Candidature;
   updateCandidature: (id: string, patch: Partial<Candidature>) => void;
   validateCandidature: (id: string) => { email: string; password: string };
   refuseCandidature: (id: string) => void;

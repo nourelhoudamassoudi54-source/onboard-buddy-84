@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminSalaries from "./pages/admin/AdminSalaries";
+import AdminCandidatures from "./pages/admin/AdminCandidatures";
 import AdminPostes from "./pages/admin/AdminPostes";
 import AdminParcours from "./pages/admin/AdminParcours";
 import AdminSuivi from "./pages/admin/AdminSuivi";

@@ -50,21 +50,33 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        admin: {
-          DEFAULT: "hsl(var(--admin))",
-          foreground: "hsl(var(--admin-foreground))",
-          muted: "hsl(var(--admin-muted))",
+        navy: {
+          DEFAULT: "hsl(var(--navy))",
+          deep: "hsl(var(--navy-deep))",
+          muted: "hsl(var(--navy-muted))",
         },
-        manager: {
-          DEFAULT: "hsl(var(--manager))",
-          foreground: "hsl(var(--manager-foreground))",
-          muted: "hsl(var(--manager-muted))",
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          muted: "hsl(var(--gold-muted))",
         },
-        salarie: {
-          DEFAULT: "hsl(var(--salarie))",
-          foreground: "hsl(var(--salarie-foreground))",
-          muted: "hsl(var(--salarie-muted))",
+        status: {
+          nouvelle: "hsl(var(--status-nouvelle))",
+          "nouvelle-bg": "hsl(var(--status-nouvelle-bg))",
+          encours: "hsl(var(--status-encours))",
+          "encours-bg": "hsl(var(--status-encours-bg))",
+          resolue: "hsl(var(--status-resolue))",
+          "resolue-bg": "hsl(var(--status-resolue-bg))",
+          rejetee: "hsl(var(--status-rejetee))",
+          "rejetee-bg": "hsl(var(--status-rejetee-bg))",
+          cloturee: "hsl(var(--status-cloturee))",
+          "cloturee-bg": "hsl(var(--status-cloturee-bg))",
         },
+        urgence: {
+          faible: "hsl(var(--urgence-faible))",
+          moyen: "hsl(var(--urgence-moyen))",
+          eleve: "hsl(var(--urgence-eleve))",
+        },
+
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

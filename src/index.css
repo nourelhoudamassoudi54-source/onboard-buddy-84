@@ -9,70 +9,83 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 222 47% 11%;
+    --background: 210 40% 98%;
+    --foreground: 210 40% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 210 40% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 210 40% 12%;
 
-    --primary: 217 91% 50%;
+    /* Navy blue #1F4E79 */
+    --primary: 209 59% 30%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 210 30% 94%;
+    --secondary-foreground: 209 59% 24%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 210 25% 95%;
+    --muted-foreground: 210 12% 45%;
 
-    --accent: 220 14% 96%;
-    --accent-foreground: 222 47% 11%;
+    /* Gold accent */
+    --accent: 41 72% 52%;
+    --accent-foreground: 210 45% 15%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 74% 52%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 217 91% 50%;
+    --border: 210 22% 88%;
+    --input: 210 22% 88%;
+    --ring: 209 59% 30%;
 
     --radius: 0.625rem;
 
-    /* Role colors */
-    --admin: 217 91% 50%;
-    --admin-foreground: 0 0% 100%;
-    --admin-muted: 217 91% 96%;
+    /* Brand tokens */
+    --navy: 209 59% 30%;
+    --navy-deep: 209 62% 22%;
+    --navy-muted: 209 45% 95%;
+    --gold: 41 72% 52%;
+    --gold-muted: 41 72% 94%;
 
-    --manager: 270 67% 47%;
-    --manager-foreground: 0 0% 100%;
-    --manager-muted: 270 67% 96%;
+    /* Status colors */
+    --status-nouvelle: 214 15% 52%;
+    --status-nouvelle-bg: 214 20% 94%;
+    --status-encours: 32 92% 48%;
+    --status-encours-bg: 32 92% 94%;
+    --status-resolue: 152 58% 39%;
+    --status-resolue-bg: 152 45% 93%;
+    --status-rejetee: 0 74% 55%;
+    --status-rejetee-bg: 0 74% 95%;
+    --status-cloturee: 209 30% 42%;
+    --status-cloturee-bg: 209 25% 93%;
 
-    --salarie: 152 69% 40%;
-    --salarie-foreground: 0 0% 100%;
-    --salarie-muted: 152 69% 96%;
+    /* Urgency */
+    --urgence-faible: 152 58% 39%;
+    --urgence-moyen: 32 92% 48%;
+    --urgence-eleve: 0 74% 55%;
 
     /* Sidebar */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 9% 46%;
-    --sidebar-primary: 217 91% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 96%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217 91% 50%;
+    --sidebar-background: 209 62% 22%;
+    --sidebar-foreground: 210 30% 82%;
+    --sidebar-primary: 41 72% 52%;
+    --sidebar-primary-foreground: 209 62% 15%;
+    --sidebar-accent: 209 55% 28%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 209 45% 30%;
+    --sidebar-ring: 41 72% 52%;
 
     /* Charts */
-    --chart-1: 217 91% 50%;
-    --chart-2: 270 67% 47%;
-    --chart-3: 152 69% 40%;
-    --chart-4: 38 92% 50%;
-    --chart-5: 0 84% 60%;
+    --chart-1: 209 59% 34%;
+    --chart-2: 41 72% 52%;
+    --chart-3: 152 58% 42%;
+    --chart-4: 32 92% 55%;
+    --chart-5: 0 74% 60%;
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(220 13% 11% / 0.04);
-    --shadow-md: 0 4px 6px -1px hsl(220 13% 11% / 0.06), 0 2px 4px -2px hsl(220 13% 11% / 0.06);
-    --shadow-card: 0 1px 3px 0 hsl(220 13% 11% / 0.04), 0 1px 2px -1px hsl(220 13% 11% / 0.02);
+    --shadow-sm: 0 1px 2px 0 hsl(209 40% 15% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(209 40% 15% / 0.08), 0 2px 4px -2px hsl(209 40% 15% / 0.06);
+    --shadow-card: 0 1px 3px 0 hsl(209 40% 15% / 0.06), 0 1px 2px -1px hsl(209 40% 15% / 0.03);
   }
 }
 
@@ -84,23 +97,5 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'DM Sans', system-ui, sans-serif;
-  }
-}
-
-@layer utilities {
-  .role-admin {
-    --role-color: var(--admin);
-    --role-foreground: var(--admin-foreground);
-    --role-muted: var(--admin-muted);
-  }
-  .role-manager {
-    --role-color: var(--manager);
-    --role-foreground: var(--manager-foreground);
-    --role-muted: var(--manager-muted);
-  }
-  .role-salarie {
-    --role-color: var(--salarie);
-    --role-foreground: var(--salarie-foreground);
-    --role-muted: var(--salarie-muted);
   }
 }

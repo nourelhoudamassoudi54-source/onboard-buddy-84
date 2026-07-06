@@ -4,25 +4,27 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { CandidaturesProvider } from "@/contexts/CandidaturesContext";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { RoleRedirect } from "@/components/RoleRedirect";
+
+import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import Profil from "./pages/Profil";
+import ReclamationDetail from "./pages/ReclamationDetail";
+
+import ClientDashboard from "./pages/client/ClientDashboard";
+import NouvelleReclamation from "./pages/client/NouvelleReclamation";
+import ClientReclamations from "./pages/client/ClientReclamations";
+
+import AgentDashboard from "./pages/agent/AgentDashboard";
+import AgentCalendrier from "./pages/agent/AgentCalendrier";
+
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminSalaries from "./pages/admin/AdminSalaries";
-import AdminCandidatures from "./pages/admin/AdminCandidatures";
-import AdminPostes from "./pages/admin/AdminPostes";
-import AdminParcours from "./pages/admin/AdminParcours";
-import AdminSuivi from "./pages/admin/AdminSuivi";
-import AdminReporting from "./pages/admin/AdminReporting";
-import ManagerDashboard from "./pages/manager/ManagerDashboard";
-import ManagerEquipe from "./pages/manager/ManagerEquipe";
-import ManagerTaches from "./pages/manager/ManagerTaches";
-import ManagerReporting from "./pages/manager/ManagerReporting";
-import SalarieDashboard from "./pages/salarie/SalarieDashboard";
-import SalarieParcours from "./pages/salarie/SalarieParcours";
-import SalarieTaches from "./pages/salarie/SalarieTaches";
-import SalarieDocuments from "./pages/salarie/SalarieDocuments";
-import SalarieProfil from "./pages/salarie/SalarieProfil";
+import AdminReclamations from "./pages/admin/AdminReclamations";
+import AdminUtilisateurs from "./pages/admin/AdminUtilisateurs";
+import AdminCategories from "./pages/admin/AdminCategories";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,39 +35,46 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
-        <CandidaturesProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/" element={<RoleRedirect />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Admin RH */}
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/salaries" element={<AdminSalaries />} />
-            <Route path="/admin/candidatures" element={<AdminCandidatures />} />
-            <Route path="/admin/postes" element={<AdminPostes />} />
-            <Route path="/admin/parcours" element={<AdminParcours />} />
-            <Route path="/admin/suivi" element={<AdminSuivi />} />
-            <Route path="/admin/reporting" element={<AdminReporting />} />
+            {/* Shared authenticated */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/profil" element={<Profil />} />
+              <Route path="/reclamations/:id" element={<ReclamationDetail />} />
+              <Route path="/client/reclamations/:id" element={<ReclamationDetail />} />
+              <Route path="/agent/reclamations/:id" element={<ReclamationDetail />} />
+              <Route path="/admin/reclamations/:id" element={<ReclamationDetail />} />
+            </Route>
 
-            {/* Manager */}
-            <Route path="/manager/dashboard" element={<ManagerDashboard />} />
-            <Route path="/manager/equipe" element={<ManagerEquipe />} />
-            <Route path="/manager/taches" element={<ManagerTaches />} />
-            <Route path="/manager/reporting" element={<ManagerReporting />} />
+            {/* Client */}
+            <Route element={<ProtectedRoute roles={["client"]} />}>
+              <Route path="/client/dashboard" element={<ClientDashboard />} />
+              <Route path="/client/nouvelle" element={<NouvelleReclamation />} />
+              <Route path="/client/reclamations" element={<ClientReclamations />} />
+            </Route>
 
-            {/* Salarié */}
-            <Route path="/salarie/dashboard" element={<SalarieDashboard />} />
-            <Route path="/salarie/parcours" element={<SalarieParcours />} />
-            <Route path="/salarie/taches" element={<SalarieTaches />} />
-            <Route path="/salarie/documents" element={<SalarieDocuments />} />
-            <Route path="/salarie/profil" element={<SalarieProfil />} />
+            {/* Agent */}
+            <Route element={<ProtectedRoute roles={["agent"]} />}>
+              <Route path="/agent/dashboard" element={<AgentDashboard />} />
+              <Route path="/agent/calendrier" element={<AgentCalendrier />} />
+            </Route>
+
+            {/* Admin */}
+            <Route element={<ProtectedRoute roles={["admin"]} />}>
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/reclamations" element={<AdminReclamations />} />
+              <Route path="/admin/utilisateurs" element={<AdminUtilisateurs />} />
+              <Route path="/admin/categories" element={<AdminCategories />} />
+            </Route>
 
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-        </CandidaturesProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

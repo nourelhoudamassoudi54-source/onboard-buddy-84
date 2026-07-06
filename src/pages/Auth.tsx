@@ -81,7 +81,14 @@ export default function Auth() {
       return;
     }
     setLoading(true);
-    const { error } = await signup(parsed.data);
+    const { error } = await signup({
+      prenom: parsed.data.prenom,
+      nom: parsed.data.nom,
+      email: parsed.data.email,
+      telephone: parsed.data.telephone,
+      password: parsed.data.password,
+      role: parsed.data.role,
+    });
     setLoading(false);
     if (error) {
       toast.error(error.includes("already") ? "Cet email est déjà utilisé" : error);

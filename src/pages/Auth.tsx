@@ -48,15 +48,30 @@ export default function Auth() {
   const [sPass, setSPass] = useState("");
   const [sRole, setSRole] = useState<AppRole>("client");
 
+  const quickLogin = async (email: string) => {
+    setLEmail(email);
+    setLPass("Test1234!");
+    setLoading(true);
+    const { error } = await login(email, "Test1234!");
+    setLoading(false);
+    if (error) {
+      toast.error("Email ou mot de passe incorrect");
+      return;
+    }
+    toast.success("Connexion réussie");
+    navigate("/");
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = loginSchema.safeParse({ email: lEmail, password: lPass });
+    const parsed = loginSchema.safeParse({ email: lEmail.trim(), password: lPass.trim() });
     if (!parsed.success) {
       toast.error(parsed.error.errors[0].message);
       return;
     }
     setLoading(true);
     const { error } = await login(parsed.data.email, parsed.data.password);
+
     setLoading(false);
     if (error) {
       toast.error(error.includes("Invalid") ? "Email ou mot de passe incorrect" : error);
@@ -179,6 +194,31 @@ export default function Auth() {
                   Se connecter
                 </Button>
               </form>
+
+              <div className="mt-6 rounded-lg border border-border bg-muted/40 p-4">
+                <p className="mb-3 text-xs font-medium text-muted-foreground">
+                  Accès rapide (comptes de démonstration)
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: "Client", email: "client@reclambank.com" },
+                    { label: "Agent", email: "agent@reclambank.com" },
+                    { label: "Admin", email: "admin@reclambank.com" },
+                  ].map((a) => (
+                    <Button
+                      key={a.email}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={loading}
+                      onClick={() => quickLogin(a.email)}
+                    >
+                      {a.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
             </TabsContent>
 
             <TabsContent value="signup">

@@ -48,15 +48,30 @@ export default function Auth() {
   const [sPass, setSPass] = useState("");
   const [sRole, setSRole] = useState<AppRole>("client");
 
+  const quickLogin = async (email: string) => {
+    setLEmail(email);
+    setLPass("Test1234!");
+    setLoading(true);
+    const { error } = await login(email, "Test1234!");
+    setLoading(false);
+    if (error) {
+      toast.error("Email ou mot de passe incorrect");
+      return;
+    }
+    toast.success("Connexion réussie");
+    navigate("/");
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = loginSchema.safeParse({ email: lEmail, password: lPass });
+    const parsed = loginSchema.safeParse({ email: lEmail.trim(), password: lPass.trim() });
     if (!parsed.success) {
       toast.error(parsed.error.errors[0].message);
       return;
     }
     setLoading(true);
     const { error } = await login(parsed.data.email, parsed.data.password);
+
     setLoading(false);
     if (error) {
       toast.error(error.includes("Invalid") ? "Email ou mot de passe incorrect" : error);

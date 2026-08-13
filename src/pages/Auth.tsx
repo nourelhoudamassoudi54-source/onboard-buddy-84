@@ -194,6 +194,31 @@ export default function Auth() {
                   Se connecter
                 </Button>
               </form>
+
+              <div className="mt-6 rounded-lg border border-border bg-muted/40 p-4">
+                <p className="mb-3 text-xs font-medium text-muted-foreground">
+                  Accès rapide (comptes de démonstration)
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: "Client", email: "client@reclambank.com" },
+                    { label: "Agent", email: "agent@reclambank.com" },
+                    { label: "Admin", email: "admin@reclambank.com" },
+                  ].map((a) => (
+                    <Button
+                      key={a.email}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={loading}
+                      onClick={() => quickLogin(a.email)}
+                    >
+                      {a.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
             </TabsContent>
 
             <TabsContent value="signup">
